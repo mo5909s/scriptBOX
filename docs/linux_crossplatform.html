@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptBox - Linux / Cross-Platform Guide</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Linux / Cross-Platform Usage</h1>
+    <p>ScriptBox now includes bash/shell script versions for Linux and macOS compatibility.</p>
+
+    <h2>1. Overview: What works on Linux</h2>
+    <table>
+      <thead>
+        <tr><th>Script</th><th>Windows (PowerShell)</th><th>Linux/macOS (Bash)</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>newsUpdate</code></td>
+          <td>✓ Full feature</td>
+          <td>✓ Full feature</td>
+          <td>Both versions fetch from NewsAPI, HN Algolia, TheMealDB. Browser opening uses <code>xdg-open</code> (Linux) or <code>open</code> (macOS).</td>
+        </tr>
+        <tr>
+          <td><code>welcome</code></td>
+          <td>✓ Full (with window tiling)</td>
+          <td>⚠ Partial (app launch only)</td>
+          <td>PS1 version tiles windows. Bash version launches apps but does not tile; use <code>wmctrl</code> or a tiling window manager for that.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2. newsUpdate (Bash/Linux version)</h2>
+    <h3>Location</h3>
+    <p><code>src/newsUpdate.sh</code></p>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Bash 4.0+</li>
+      <li><code>curl</code> (for API calls)</li>
+      <li><code>jq</code> (for JSON parsing) — optional but recommended</li>
+      <li>Internet access</li>
+      <li>NewsAPI key from <a href="https://newsapi.org/register" target="_blank">newsapi.org</a></li>
+    </ul>
+
+    <h3>Install dependencies (Ubuntu/Debian)</h3>
+    <pre>sudo apt-get update
+sudo apt-get install curl jq</pre>
+
+    <h3>Setup and usage</h3>
+    <p>Make the script executable:</p>
+    <pre>chmod +x ./src/newsUpdate.sh</pre>
+
+    <p>Run with your own NewsAPI key:</p>
+    <pre>export NEWS_API_KEY="your_api_key_here"
+./src/newsUpdate.sh</pre>
+
+    <p>Or pass the key as a parameter:</p>
+    <pre>./src/newsUpdate.sh -NewsApiKey "your_api_key_here" -Tags "technology" -ArticlesPerTag 3</pre>
+
+    <h3>Behavior differences from PowerShell version</h3>
+    <ul>
+      <li>Browser opening uses <code>xdg-open</code> on Linux (respects your default browser) or <code>open</code> on macOS.</li>
+      <li>Color output is ANSI-based (should work in most Linux/macOS terminals).</li>
+      <li>Without <code>jq</code>, JSON parsing falls back to basic patterns; <code>jq</code> is strongly recommended for reliable parsing.</li>
+      <li>Recipe rotation is deterministic by day-of-year, same as the PowerShell version.</li>
+    </ul>
+
+    <h3>Common parameters</h3>
+    <pre>./src/newsUpdate.sh \
+  -NewsApiKey "your_key" \
+  -Tags "AI,space,technology" \
+  -ArticlesPerTag 5 \
+  -Language en \
+  -TopHeadlines \
+  -SaveToFile \
+  -NoBrowser</pre>
+
+    <h2>3. welcome (Bash/Linux version)</h2>
+    <h3>Location</h3>
+    <p><code>src/welcome.sh</code></p>
+
+    <h3>What it does</h3>
+    <ul>
+      <li>Launches or reuses Thunderbird, Spotify, and Todoist (or similar).</li>
+      <li>Optionally plays a startup audio file.</li>
+      <li>Does <strong>not</strong> tile windows (window tiling is environment-specific).</li>
+    </ul>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Bash</li>
+      <li>The target applications installed: <code>thunderbird</code>, <code>spotify</code>, <code>todoist</code> (or alternatives)</li>
+      <li>Optional: audio player such as <code>paplay</code>, <code>ffplay</code>, or <code>mpv</code></li>
+    </ul>
+
+    <h3>Setup and usage</h3>
+    <p>Make the script executable:</p>
+    <pre>chmod +x ./src/welcome.sh</pre>
+
+    <p>Run normally:</p>
+    <pre>./src/welcome.sh</pre>
+
+    <p>Dry-run mode (show what would happen without launching apps):</p>
+    <pre>./src/welcome.sh -DryRun</pre>
+
+    <p>Skip startup audio:</p>
+    <pre>./src/welcome.sh -SkipStartupAudio</pre>
+
+    <h3>Install audio player (if you want startup sound)</h3>
+    <p>Ubuntu/Debian:</p>
+    <pre>sudo apt-get install pulseaudio-utils
+# or
+sudo apt-get install ffmpeg
+# or
+sudo apt-get install mpv</pre>
+
+    <h3>Window tiling on Linux</h3>
+    <div class="warning">
+      <strong>Important:</strong> This bash version does not tile windows. Window tiling is not portable because different Linux desktop environments (X11, Wayland, i3, GNOME, KDE) handle it differently.
+    </div>
+
+    <p>If you want window tiling on Linux, you have options:</p>
+    <ul>
+      <li><strong>Use a tiling window manager:</strong> i3, awesome, sway, dwm. These tile windows automatically.</li>
+      <li><strong>Use wmctrl:</strong> Can move and resize windows on X11. Example:
+        <pre>wmctrl -r "Thunderbird" -b add,maximized_vert,maximized_horz</pre>
+      </li>
+      <li><strong>Use xdotool:</strong> Another X11 window manipulation tool.</li>
+    </ul>
+
+    <h2>4. Environment variables</h2>
+    <p>Instead of passing parameters every time, you can set environment variables:</p>
+    <table>
+      <thead>
+        <tr><th>Variable</th><th>Used by</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>NEWS_API_KEY</code></td><td>newsUpdate.sh</td><td><code>export NEWS_API_KEY="abc123..."</code></td></tr>
+        <tr><td><code>GITHUB_TOKEN</code></td><td>newsUpdate.sh</td><td><code>export GITHUB_TOKEN="ghp_..."</code></td></tr>
+      </tbody>
+    </table>
+
+    <p>Add them to your <code>~/.bashrc</code> or <code>~/.zshrc</code> to make them permanent:</p>
+    <pre>echo 'export NEWS_API_KEY="your_key_here"' >> ~/.bashrc
+source ~/.bashrc</pre>
+
+    <h2>5. Scheduling on Linux</h2>
+    <p>Use cron to run newsUpdate automatically:</p>
+    <pre>crontab -e</pre>
+
+    <p>Example: Run at 8 AM every weekday:</p>
+    <pre>0 8 * * 1-5 /path/to/newsUpdate.sh -NoBrowser -SaveToFile</pre>
+
+    <h2>6. Troubleshooting</h2>
+    <ul>
+      <li><strong>Command not found:</strong> Make sure the script is executable: <code>chmod +x script.sh</code></li>
+      <li><strong>Permission denied:</strong> Check file permissions: <code>ls -la src/</code></li>
+      <li><strong>jq not found:</strong> Install it: <code>sudo apt-get install jq</code> (recommended)</li>
+      <li><strong>curl fails:</strong> Check internet connection and firewall rules.</li>
+      <li><strong>Browser does not open:</strong> Ensure <code>xdg-open</code> (Linux) or <code>open</code> (macOS) works, or use <code>-NoBrowser</code>.</li>
+      <li><strong>Audio player not found:</strong> Install one: <code>paplay</code>, <code>ffplay</code>, or <code>mpv</code>.</li>
+    </ul>
+
+    <h2>7. Future improvements</h2>
+    <ul>
+      <li>Add support for more news sources on Linux.</li>
+      <li>Extend welcome script with wmctrl-based window tiling for X11.</li>
+      <li>Create a <code>.desktop</code> file for easy launcher integration.</li>
+      <li>Add systemd service file for scheduled runs.</li>
+    </ul>
+  </main>
+</body>
+</html>
+
