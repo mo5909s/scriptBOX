@@ -46,6 +46,12 @@
           <td>⚠ Partial (app launch only)</td>
           <td>PS1 version tiles windows. Bash version launches apps but does not tile; use <code>wmctrl</code> or a tiling window manager for that.</td>
         </tr>
+        <tr>
+          <td><code>driverUpdate</code></td>
+          <td>✓ Driver scan/install via Windows Update Agent</td>
+          <td>⚠ Partial, distro-specific</td>
+          <td>Bash version checks trusted Linux channels such as <code>fwupdmgr</code>, <code>ubuntu-drivers</code>, and driver-related package updates. Coverage depends on distro and hardware vendor.</td>
+        </tr>
       </tbody>
     </table>
 
@@ -148,7 +154,31 @@ sudo apt-get install mpv</pre>
       <li><strong>Use xdotool:</strong> Another X11 window manipulation tool.</li>
     </ul>
 
-    <h2>4. Environment variables</h2>
+    <h2>4. driverUpdate (Bash/Linux version)</h2>
+    <h3>Location</h3>
+    <p><code>src/driverUpdate.sh</code></p>
+
+    <h3>What it does</h3>
+    <ul>
+      <li>Checks firmware updates via <code>fwupdmgr</code> when available.</li>
+      <li>Checks Ubuntu recommended driver changes via <code>ubuntu-drivers</code> when available.</li>
+      <li>Checks distro package manager updates for common driver-related packages.</li>
+      <li>Asks before applying each category of updates.</li>
+    </ul>
+
+    <h3>Basic usage</h3>
+    <pre>chmod +x ./src/driverUpdate.sh
+./src/driverUpdate.sh --list-only</pre>
+
+    <p>Apply everything with prompts auto-accepted:</p>
+    <pre>./src/driverUpdate.sh --yes</pre>
+
+    <p>Documentation page: <a href="driverUpdate_linux_documentation.html">driverUpdate.sh documentation</a></p>
+
+    <div class="warning">
+      <strong>Important:</strong> Linux driver delivery is not standardized the way Windows Update is. The script intentionally uses only trusted channels already configured on the machine; it does not search random vendor sites.</div>
+
+    <h2>5. Environment variables</h2>
     <p>Instead of passing parameters every time, you can set environment variables:</p>
     <table>
       <thead>
@@ -164,14 +194,14 @@ sudo apt-get install mpv</pre>
     <pre>echo 'export NEWS_API_KEY="your_key_here"' >> ~/.bashrc
 source ~/.bashrc</pre>
 
-    <h2>5. Scheduling on Linux</h2>
+    <h2>6. Scheduling on Linux</h2>
     <p>Use cron to run newsUpdate automatically:</p>
     <pre>crontab -e</pre>
 
     <p>Example: Run at 8 AM every weekday:</p>
     <pre>0 8 * * 1-5 /path/to/newsUpdate.sh -NoBrowser -SaveToFile</pre>
 
-    <h2>6. Troubleshooting</h2>
+    <h2>7. Troubleshooting</h2>
     <ul>
       <li><strong>Command not found:</strong> Make sure the script is executable: <code>chmod +x script.sh</code></li>
       <li><strong>Permission denied:</strong> Check file permissions: <code>ls -la src/</code></li>
@@ -181,7 +211,7 @@ source ~/.bashrc</pre>
       <li><strong>Audio player not found:</strong> Install one: <code>paplay</code>, <code>ffplay</code>, or <code>mpv</code>.</li>
     </ul>
 
-    <h2>7. Future improvements</h2>
+    <h2>8. Future improvements</h2>
     <ul>
       <li>Add support for more news sources on Linux.</li>
       <li>Extend welcome script with wmctrl-based window tiling for X11.</li>

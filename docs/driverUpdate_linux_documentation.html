@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - driverUpdate.sh</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>driverUpdate.sh</code></h1>
+    <p class="small">Project path: <code>src/driverUpdate.sh</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> This Linux shell script checks trusted driver and firmware update channels, shows what they report, and asks whether to install the available updates. It focuses on safe distro and firmware tooling instead of random download links.
+    </div>
+
+    <h2>1. How the script works</h2>
+    <ol>
+      <li>Detects the distro package backend (<code>apt</code>, <code>dnf</code>, or <code>pacman</code>) if available.</li>
+      <li>Checks <code>fwupdmgr</code> for firmware updates delivered through LVFS.</li>
+      <li>Checks <code>ubuntu-drivers</code> for recommended proprietary driver changes on Ubuntu-based systems.</li>
+      <li>Checks the distro package manager for updates to common driver-related packages such as firmware, Mesa, NVIDIA, Intel, AMD, and X.org driver packages.</li>
+      <li>Shows the findings and asks whether each update source should be applied.</li>
+    </ol>
+
+    <h2>2. Safe update sources</h2>
+    <table>
+      <thead>
+        <tr><th>Source</th><th>What it covers</th><th>Install action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fwupdmgr</code></td><td>Firmware updates published through LVFS</td><td><code>sudo fwupdmgr update</code></td></tr>
+        <tr><td><code>ubuntu-drivers</code></td><td>Recommended proprietary drivers on Ubuntu</td><td><code>sudo ubuntu-drivers autoinstall</code></td></tr>
+        <tr><td>Distro package manager</td><td>Installed driver-related packages from trusted repos</td><td>Only upgrades the matching packages</td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. Usage</h2>
+    <p>Basic interactive run:</p>
+    <pre>./src/driverUpdate.sh</pre>
+
+    <p>List only:</p>
+    <pre>./src/driverUpdate.sh --list-only</pre>
+
+    <p>Dry run:</p>
+    <pre>./src/driverUpdate.sh --dry-run</pre>
+
+    <p>Auto-confirm prompts:</p>
+    <pre>./src/driverUpdate.sh --yes</pre>
+
+    <h2>4. Setup instructions for another user</h2>
+    <ul>
+      <li>Make the script executable: <code>chmod +x ./src/driverUpdate.sh</code></li>
+      <li>Use <code>sudo</code> rights if updates should be installed.</li>
+      <li>Install optional tools if you want deeper coverage:
+        <ul>
+          <li><code>fwupd</code> for firmware checks</li>
+          <li><code>ubuntu-drivers-common</code> on Ubuntu for proprietary driver recommendations</li>
+        </ul>
+      </li>
+      <li>Run <code>--list-only</code> first if you only want to review what the machine reports.</li>
+    </ul>
+
+    <p>Ubuntu/Debian example dependencies:</p>
+    <pre>sudo apt-get update
+sudo apt-get install fwupd ubuntu-drivers-common</pre>
+
+    <h2>5. Current state</h2>
+    <div class="status">
+      <strong>Implemented now:</strong>
+      <ul>
+        <li>Firmware scan through <code>fwupdmgr</code> when available.</li>
+        <li>Ubuntu driver recommendation scan through <code>ubuntu-drivers</code> when available.</li>
+        <li>Driver-related package update detection through <code>apt</code>, <code>dnf</code>, or <code>pacman</code>.</li>
+        <li>Interactive install prompts for each source.</li>
+        <li>Dry-run and list-only modes.</li>
+      </ul>
+    </div>
+
+    <h3>Known limitations</h3>
+    <ul>
+      <li>Linux driver delivery is distro-specific. No single command can guarantee every possible vendor driver is covered.</li>
+      <li>The package-manager scan is pattern-based and focuses on common driver-related package names.</li>
+      <li>Some GPU vendors or enterprise hardware vendors may require repository setup or vendor tools that are outside this script.</li>
+      <li>Firmware updates often require a reboot after installation.</li>
+    </ul>
+
+    <h3>TODO / future plans</h3>
+    <ul>
+      <li>Add optional support for openSUSE <code>zypper</code>.</li>
+      <li>Add a report export mode for maintenance logs.</li>
+      <li>Improve distro-specific package matching for more hardware families.</li>
+    </ul>
+
+    <h2>6. Troubleshooting</h2>
+    <ul>
+      <li><strong>No results from fwupdmgr:</strong> the tool may not be installed, or the device may not be supported by LVFS.</li>
+      <li><strong>ubuntu-drivers not found:</strong> install <code>ubuntu-drivers-common</code> or ignore that source on non-Ubuntu systems.</li>
+      <li><strong>No driver package updates found:</strong> this can be normal if the repositories currently offer nothing newer.</li>
+      <li><strong>Permission denied:</strong> rerun with a user that can use <code>sudo</code>.</li>
+    </ul>
+  </main>
+</body>
+</html>
+

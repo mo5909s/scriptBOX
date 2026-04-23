@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - driverUpdate.ps1</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>driverUpdate.ps1</code></h1>
+    <p class="small">Project path: <code>src/driverUpdate.ps1</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> This script checks which driver updates are currently offered by Windows Update / Microsoft Update, shows the results in a readable list, and asks whether those updates should be installed. It uses the built-in Windows Update Agent instead of downloading drivers from random websites.
+    </div>
+
+    <h2>1. How the script works</h2>
+    <ol>
+      <li>Creates a Windows Update Agent session through the COM interface.</li>
+      <li>Searches for updates matching <code>Type='Driver'</code> that are not installed and not hidden.</li>
+      <li>Shows each available driver update with title, categories, approximate size, and reboot hint.</li>
+      <li>Prompts the user to install all, some, or none of the listed updates.</li>
+      <li>If installation is chosen, accepts any needed EULAs, downloads the driver updates, and starts installation.</li>
+      <li>Prints per-item results and warns if a reboot is required.</li>
+    </ol>
+
+    <h3>Why this is the safer approach</h3>
+    <ul>
+      <li>Uses Windows Update / Microsoft Update rather than scraping vendor download pages.</li>
+      <li>Does not execute unknown installers from the web.</li>
+      <li>Keeps the user in control by asking before installation unless <code>-AutoYes</code> is used.</li>
+    </ul>
+
+    <h2>2. Usage</h2>
+    <p>Basic scan with install prompt:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\driverUpdate.ps1</pre>
+
+    <p>List only, do not install anything:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\driverUpdate.ps1 -ListOnly</pre>
+
+    <p>Install everything offered without extra prompt:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\driverUpdate.ps1 -AutoYes</pre>
+
+    <p>Run without color:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\driverUpdate.ps1 -NoColor</pre>
+
+    <div class="warning">
+      <strong>Important:</strong> Installing driver updates usually requires an elevated PowerShell window (<em>Run as Administrator</em>). A non-elevated session can still be used for scanning.
+    </div>
+
+    <h2>3. Parameters</h2>
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>-ListOnly</code></td><td>Only scan and list driver updates. No installation is started.</td></tr>
+        <tr><td><code>-AutoYes</code></td><td>Automatically select all offered updates for installation after the scan.</td></tr>
+        <tr><td><code>-NoColor</code></td><td>Print plain text output without colored headings or status lines.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>4. Setup instructions for another user</h2>
+    <ul>
+      <li>Use Windows 10 or Windows 11 with PowerShell 5.1 or later.</li>
+      <li>Make sure the Windows Update service is enabled and the machine has internet access.</li>
+      <li>Open PowerShell as Administrator if you want to install updates, not just list them.</li>
+      <li>Run <code>-ListOnly</code> first on a new system to confirm what the machine sees through Windows Update.</li>
+    </ul>
+
+    <h2>5. Current state</h2>
+    <div class="status">
+      <strong>Implemented now:</strong>
+      <ul>
+        <li>Trusted driver update scan through the Windows Update Agent.</li>
+        <li>Readable listing of offered driver updates.</li>
+        <li>Interactive selection of all, some, or none of the updates.</li>
+        <li>Installation workflow with download and result reporting.</li>
+        <li>Reboot-required hint after installation.</li>
+      </ul>
+    </div>
+
+    <h3>Known limitations</h3>
+    <ul>
+      <li>The script sees the drivers that Windows Update / Microsoft Update offers to the system. OEM utilities may still provide newer or more device-specific packages.</li>
+      <li>Some vendors distribute BIOS, firmware, GPU, or docking-station updates only through their own trusted tools.</li>
+      <li>A successful installation may still require a reboot before the driver is fully active.</li>
+    </ul>
+
+    <h3>TODO / future plans</h3>
+    <ul>
+      <li>Add optional detection of installed OEM update tools such as Dell Command Update or Lenovo System Update.</li>
+      <li>Export scan results to a file for maintenance logging.</li>
+      <li>Add a mode to show the currently installed driver version alongside the offered update title where the API exposes it.</li>
+    </ul>
+
+    <h2>6. Troubleshooting</h2>
+    <ul>
+      <li><strong>Search fails:</strong> check that the Windows Update service is enabled and the PC can contact Microsoft update services.</li>
+      <li><strong>Install fails immediately:</strong> reopen PowerShell as Administrator and try again.</li>
+      <li><strong>No updates found:</strong> that usually means Windows Update is not offering newer drivers right now; this is not always an error.</li>
+      <li><strong>Need vendor-specific updates:</strong> use the trusted OEM tool for your hardware vendor if it is already installed on the machine.</li>
+    </ul>
+  </main>
+</body>
+</html>
+
