@@ -21,6 +21,12 @@ param(
     [switch]$OpenInBrowser,
     [switch]$BrowserOnly
 )
+
+$browserModeExplicitlySet = $PSBoundParameters.ContainsKey("OpenInBrowser") -or $PSBoundParameters.ContainsKey("BrowserOnly")
+if (-not $browserModeExplicitlySet -and [Environment]::UserInteractive) {
+    $OpenInBrowser = $true
+}
+
 function Write-Color {
     param([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::White)
     if ($BrowserOnly) { return }
