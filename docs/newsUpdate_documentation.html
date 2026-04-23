@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - newsUpdate.ps1</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h1 { margin-bottom: 8px; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>newsUpdate.ps1</code></h1>
+    <p class="small">Project path: <code>src/newsUpdate.ps1</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> This script creates a personalized news briefing by combining NewsAPI results, optional Hacker News results, a daily recipe from TheMealDB, and an optional AI-generated summary. It can print to the terminal, save to a text file, and generate a browser dashboard.
+    </div>
+
+    <h2>1. How the script works</h2>
+    <h3>Main execution flow</h3>
+    <ol>
+      <li>Reads script parameters such as API keys, tags, language, output settings, and browser options.</li>
+      <li>Checks whether a placeholder NewsAPI key is still being used.</li>
+      <li>Fetches one deterministic recipe of the day using TheMealDB.</li>
+      <li>Loops over each configured tag and collects matching articles.</li>
+      <li>Pulls news from NewsAPI and, unless disabled, from Hacker News Algolia.</li>
+      <li>Normalizes the results into a common internal structure.</li>
+      <li>Optionally sends collected headlines to the GitHub Copilot endpoint for a short summary.</li>
+      <li>Prints a formatted briefing in the terminal.</li>
+      <li>Optionally saves the terminal output to a text file.</li>
+      <li>Optionally generates an HTML file and opens it in the default browser.</li>
+    </ol>
+
+    <h3>Important functions</h3>
+    <table>
+      <thead>
+        <tr><th>Function</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Write-Color</code></td><td>Writes colored console output unless browser-only mode is active.</td></tr>
+        <tr><td><code>HtmlEnc</code></td><td>Escapes text before inserting it into generated HTML.</td></tr>
+        <tr><td><code>Get-DailyRecipe</code></td><td>Chooses a recipe deterministically by day-of-year so the recipe changes daily but stays stable throughout the day.</td></tr>
+        <tr><td><code>Get-NewsEverything</code> / <code>Get-NewsTopHeadlines</code></td><td>Calls the NewsAPI endpoints and returns article data.</td></tr>
+        <tr><td><code>Get-HackerNewsForTag</code></td><td>Fetches matching stories from the HN Algolia API.</td></tr>
+        <tr><td><code>Get-AiSummary</code></td><td>Uses the provided GitHub token to ask the Copilot chat endpoint for a short summary.</td></tr>
+        <tr><td><code>Format-PublishedAt</code></td><td>Converts ISO date strings to local time in <code>dd.MM.yyyy HH:mm</code> format.</td></tr>
+        <tr><td><code>Emit</code></td><td>Central helper for terminal output and optional file saving.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Output modes</h3>
+    <ul>
+      <li><strong>Terminal mode:</strong> default behavior.</li>
+      <li><strong>File mode:</strong> enable <code>-SaveToFile</code> and optionally set <code>-OutputPath</code>.</li>
+      <li><strong>Browser mode:</strong> enable <code>-OpenInBrowser</code> to keep terminal output and also open HTML.</li>
+      <li><strong>Browser-only mode:</strong> enable <code>-BrowserOnly</code> to suppress terminal output.</li>
+    </ul>
+
+    <h2>2. Setup instructions for another user</h2>
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Windows PowerShell or PowerShell capable of running <code>.ps1</code> scripts.</li>
+      <li>Internet access.</li>
+      <li>A NewsAPI key from <a href="https://newsapi.org/register" target="_blank">newsapi.org</a>.</li>
+      <li>Optional: a GitHub token if AI summaries should be enabled.</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Important:</strong> The script currently contains a hardcoded default value for <code>$NewsApiKey</code>. A new user should not rely on that and should pass their own key explicitly or move secrets to environment variables or another secure place.
+    </div>
+
+    <h3>Recommended first run</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\newsUpdate.ps1 `
+  -NewsApiKey "&lt;YOUR_NEWSAPI_KEY&gt;" `
+  -Tags "technology","AI","science" `
+  -ArticlesPerTag 3</pre>
+
+    <h3>Browser dashboard example</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\newsUpdate.ps1 `
+  -NewsApiKey "&lt;YOUR_NEWSAPI_KEY&gt;" `
+  -OpenInBrowser `
+  -SaveToFile</pre>
+
+    <h3>Settings users typically change</h3>
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Typical use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>-NewsApiKey</code></td><td>Always set your own key when sharing or onboarding a new user.</td></tr>
+        <tr><td><code>-GitHubToken</code></td><td>Optional; enables AI summaries.</td></tr>
+        <tr><td><code>-Tags</code></td><td>Main personalization setting; choose the topics the user actually cares about.</td></tr>
+        <tr><td><code>-ArticlesPerTag</code></td><td>Increase for more detail or reduce for a shorter morning briefing.</td></tr>
+        <tr><td><code>-Language</code></td><td>Change the preferred NewsAPI language.</td></tr>
+        <tr><td><code>-TopHeadlines</code></td><td>Use top headlines instead of the broader everything search.</td></tr>
+        <tr><td><code>-DisableHackerNews</code></td><td>Useful if the user wants only conventional news sources.</td></tr>
+        <tr><td><code>-NoColor</code></td><td>Useful for plain terminals or log captures.</td></tr>
+        <tr><td><code>-SaveToFile</code> / <code>-OutputPath</code></td><td>Useful for keeping a copy of the briefing.</td></tr>
+        <tr><td><code>-OpenInBrowser</code> / <code>-BrowserOnly</code></td><td>Useful if the user prefers a visual dashboard.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Quick checklist for handover</h3>
+    <ul>
+      <li>Tell the new user to bring their own API keys and tokens.</li>
+      <li>Let them choose their own tags and language.</li>
+      <li>Have them test terminal mode first before enabling browser mode and AI summaries.</li>
+      <li>If this is used on a schedule, prefer passing secrets via a secure external configuration method.</li>
+    </ul>
+
+    <h2>3. Current state</h2>
+    <div class="status">
+      <strong>Implemented now:</strong>
+      <ul>
+        <li>Multi-source aggregation from NewsAPI and optional Hacker News.</li>
+        <li>Daily recipe recommendation from TheMealDB.</li>
+        <li>Optional AI summary generation.</li>
+        <li>Terminal, text-file, and browser output modes.</li>
+        <li>Basic error handling around external API calls.</li>
+      </ul>
+    </div>
+
+    <h3>TODOs / future plans</h3>
+    <ul>
+      <li>Remove the hardcoded API key and require a secure user-provided key.</li>
+      <li>Add retry and timeout handling for external services.</li>
+      <li>Deduplicate similar articles between NewsAPI and Hacker News.</li>
+      <li>Add logging for unattended or scheduled runs.</li>
+      <li>Add config-file support for non-technical users.</li>
+      <li>Add export formats such as JSON or Markdown.</li>
+      <li>Consider user profiles like work, gaming, finance, or science presets.</li>
+    </ul>
+
+    <h3>Known limitations</h3>
+    <ul>
+      <li>External API availability and quotas affect the results.</li>
+      <li>Similar stories can appear more than once because deduplication is not implemented.</li>
+      <li>HTML output is written to a temporary file by default.</li>
+      <li>AI summaries depend on a valid token and compatible endpoint behavior.</li>
+    </ul>
+
+    <h2>4. Troubleshooting</h2>
+    <ul>
+      <li><strong>Script does not start:</strong> try running with <code>-ExecutionPolicy Bypass</code>.</li>
+      <li><strong>No articles found:</strong> use broader tags such as <code>technology</code> or disable <code>-TopHeadlines</code>.</li>
+      <li><strong>NewsAPI errors:</strong> verify key validity and quota.</li>
+      <li><strong>No AI summary:</strong> check the GitHub token and leave the feature disabled if not needed.</li>
+      <li><strong>Browser did not open:</strong> verify file associations and try <code>-OpenInBrowser</code> again.</li>
+    </ul>
+  </main>
+</body>
+</html>
+

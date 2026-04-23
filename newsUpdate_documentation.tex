@@ -1,0 +1,196 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\geometry{margin=2.5cm}
+
+\title{Documentation: \texttt{newsUpdate.ps1}}
+\author{ScriptBox Project}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Purpose and Scope}
+This document explains how the \texttt{src/newsUpdate.ps1} script works, how another user can set it up, and the current project status with TODOs and future plans.
+
+\subsection{What the script does}
+The script generates a personalized morning briefing by combining:
+\begin{itemize}
+  \item News from NewsAPI (tag-based queries),
+  \item optional Hacker News results (via Algolia API),
+  \item one deterministic daily recipe from TheMealDB,
+  \item optional AI summary generation using a GitHub Copilot token.
+\end{itemize}
+
+It supports output in terminal, text file, and browser-rendered HTML.
+
+\section{How the Script Works}
+\subsection{Main execution flow}
+At a high level, the script executes the following pipeline:
+\begin{enumerate}
+  \item Parse script parameters (API key, tags, output options, etc.).
+  \item Validate minimal configuration (NewsAPI key placeholder check).
+  \item Fetch one daily recipe from TheMealDB.
+  \item For each configured tag:
+    \begin{itemize}
+      \item fetch NewsAPI articles,
+      \item optionally fetch Hacker News items,
+      \item normalize data into a shared structure,
+      \item optionally generate an AI summary over collected headlines.
+    \end{itemize}
+  \item Print formatted output in terminal.
+  \item Optionally save terminal output to a text file.
+  \item Optionally build and open a responsive HTML page in a browser.
+\end{enumerate}
+
+\subsection{Important functions}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.30\textwidth} >{\raggedright\arraybackslash}p{0.65\textwidth}}
+\textbf{Function} & \textbf{Responsibility} \\
+\hline
+\texttt{Write-Color} & Color-aware terminal output with support for \texttt{-NoColor} and \texttt{-BrowserOnly}. \\
+\texttt{HtmlEnc} & HTML-escapes strings before inserting data into generated HTML. \\
+\texttt{Get-DailyRecipe} & Gets one recipe from TheMealDB based on day-of-year for deterministic daily rotation. \\
+\texttt{Get-NewsEverything} / \texttt{Get-NewsTopHeadlines} & Calls NewsAPI endpoints and returns article arrays. \\
+\texttt{Get-HackerNewsForTag} & Pulls stories from Algolia HN search API for each tag. \\
+\texttt{Get-AiSummary} & Sends headlines to GitHub Copilot API and returns a short summary. \\
+\texttt{Format-PublishedAt} & Converts ISO date strings to local time format \texttt{dd.MM.yyyy HH:mm}. \\
+\texttt{Emit} & Centralized output helper used by terminal and file-save logic. \\
+\end{longtable}
+
+\subsection{Output modes}
+\begin{itemize}
+  \item \textbf{Terminal output} (default): formatted blocks by tag and source.
+  \item \textbf{Text file output}: enabled with \texttt{-SaveToFile}; path configurable via \texttt{-OutputPath}.
+  \item \textbf{Browser output}: enabled with \texttt{-OpenInBrowser} (plus terminal) or \texttt{-BrowserOnly} (no terminal output).
+\end{itemize}
+
+\section{Setup and User Configuration}
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Windows PowerShell (script currently written for PowerShell syntax used in \texttt{.ps1} files).
+  \item Internet access.
+  \item NewsAPI key from \url{https://newsapi.org/register}.
+  \item Optional: GitHub token for AI summaries (Copilot-compatible endpoint).
+\end{itemize}
+
+\subsection{Recommended first-time setup}
+\begin{enumerate}
+  \item Copy repository and open a PowerShell terminal in the project root.
+  \item Set your own API key values when running (recommended), instead of editing hardcoded defaults.
+  \item Run the script once with a minimal command and verify data is returned.
+\end{enumerate}
+
+Example run:
+\begin{verbatim}
+powershell -ExecutionPolicy Bypass -File .\src\newsUpdate.ps1 `
+  -NewsApiKey "<YOUR_NEWSAPI_KEY>" `
+  -Tags "technology","AI","science" `
+  -ArticlesPerTag 3
+\end{verbatim}
+
+Run with browser output and saved text file:
+\begin{verbatim}
+powershell -ExecutionPolicy Bypass -File .\src\newsUpdate.ps1 `
+  -NewsApiKey "<YOUR_NEWSAPI_KEY>" `
+  -OpenInBrowser -SaveToFile
+\end{verbatim}
+
+\subsection{Settings reference}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.28\textwidth} >{\raggedright\arraybackslash}p{0.67\textwidth}}
+\textbf{Parameter} & \textbf{Meaning / Typical Change} \\
+\hline
+\texttt{-NewsApiKey} & Required for NewsAPI calls. New users should always set their own value. \\
+\texttt{-DisableHackerNews} & Disables HN contribution if only NewsAPI is desired. \\
+\texttt{-GitHubToken} & Enables AI summary generation. Leave empty to disable summaries. \\
+\texttt{-Tags} & Main personalization control; choose topics relevant to the user. \\
+\texttt{-ArticlesPerTag} & Controls result count and output size. \\
+\texttt{-Language} & NewsAPI language filter (validated list in script). \\
+\texttt{-TopHeadlines} & Switch endpoint from \texttt{everything} to \texttt{top-headlines}. \\
+\texttt{-NoColor} & Plain terminal output without ANSI colors. \\
+\texttt{-SaveToFile} / \texttt{-OutputPath} & Persist output to text file for archival or automation. \\
+\texttt{-OpenInBrowser} / \texttt{-BrowserOnly} & Generate and open HTML news dashboard. \\
+\end{longtable}
+
+\subsection{Sharing with another user}
+For a clean handover, provide:
+\begin{itemize}
+  \item this documentation file,
+  \item a short run command template,
+  \item clear note that API keys/tokens must be user-owned and not committed.
+\end{itemize}
+
+\subsection{Quick start (60 seconds)}
+\begin{enumerate}
+  \item Open PowerShell in project root.
+  \item Run with your own NewsAPI key.
+  \item Confirm that at least one tag prints article entries.
+\end{enumerate}
+
+\begin{verbatim}
+powershell -ExecutionPolicy Bypass -File .\src\newsUpdate.ps1 `
+  -NewsApiKey "<YOUR_NEWSAPI_KEY>"
+\end{verbatim}
+
+Expected result: a timestamped briefing with recipe block and one section per tag.
+
+\subsection{Troubleshooting}
+\begin{itemize}
+  \item \textbf{No output or script blocked:} check PowerShell execution policy and run with \texttt{-ExecutionPolicy Bypass}.
+  \item \textbf{NewsAPI errors:} verify key validity, quota, and endpoint limits on your plan.
+  \item \textbf{Empty article sections:} try broader tags (for example \texttt{technology}) and set \texttt{-TopHeadlines} off.
+  \item \textbf{AI summary missing:} ensure \texttt{-GitHubToken} is set and token has correct access.
+  \item \textbf{Browser did not open:} run with \texttt{-OpenInBrowser} and verify default browser association on the OS.
+\end{itemize}
+
+\section{Current State, TODOs, and Future Plans}
+\subsection{Current state (as implemented)}
+\begin{itemize}
+  \item Multi-source aggregation works (NewsAPI + optional HN + recipe).
+  \item Optional AI summary integration is present.
+  \item Output supports terminal, file, and browser dashboard.
+  \item Error handling exists around external API calls.
+\end{itemize}
+
+\subsection{TODOs (recommended next tasks)}
+\begin{itemize}
+  \item Remove hardcoded default API key from source and require secure input (env var or argument only).
+  \item Add per-source request timeout and retry/backoff strategy.
+  \item Add duplicate article detection between NewsAPI and HN results.
+  \item Add automated tests for formatter logic and date conversion.
+  \item Add logging mode for scheduled/background runs.
+\end{itemize}
+
+\subsection{Future plans}
+\begin{itemize}
+  \item Optional categories/profiles (e.g., \texttt{work}, \texttt{gaming}, \texttt{finance}).
+  \item Caching layer to reduce repeated API calls within short intervals.
+  \item Export options such as Markdown/JSON for downstream processing.
+  \item Config file support (e.g., \texttt{newsUpdate.config.json}) for non-technical users.
+  \item Optional notification integration (email/Teams/Slack).
+\end{itemize}
+
+\subsection{Known limitations}
+\begin{itemize}
+  \item News relevance depends on external provider indexing and API quotas.
+  \item No built-in deduplication currently; similar stories can appear from multiple sources.
+  \item Secrets are parameter-based and not yet managed through a dedicated secret store.
+  \item HTML output path is temporary by default and is not retained unless separately archived.
+\end{itemize}
+
+\section{Maintenance Notes}
+\begin{itemize}
+  \item Keep endpoint URLs and model names reviewed periodically; provider APIs can evolve.
+  \item Rotate tokens/keys and avoid storing secrets in version control.
+  \item Re-check CSS and layout in generated HTML on mobile after major edits.
+\end{itemize}
+
+\end{document}
+

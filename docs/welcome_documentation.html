@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - welcome.ps1</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h1 { margin-bottom: 8px; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>welcome.ps1</code></h1>
+    <p class="small">Project path: <code>src/welcome.ps1</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> This script launches or reuses Thunderbird, Spotify, and Microsoft To Do, waits until their main windows exist, tiles the three windows across a selected screen, and optionally plays a startup audio file.
+    </div>
+
+    <h2>1. How the script works</h2>
+    <h3>Main execution flow</h3>
+    <ol>
+      <li>Reads startup settings such as dry-run mode, timeout behavior, screen index, and audio settings.</li>
+      <li>Loads small Win32 helpers using <code>Add-Type</code> so PowerShell can call <code>SetWindowPos</code> and <code>ShowWindow</code>.</li>
+      <li>Resolves installation paths for Thunderbird, Spotify, and Microsoft To Do.</li>
+      <li>Starts each app if it is not running yet, or reuses an existing process if it is already open.</li>
+      <li>If not in dry-run mode, waits until each app has a real window handle.</li>
+      <li>Finds the target screen and tiles the three windows in equal-width columns.</li>
+      <li>Optionally plays <code>welcome.mp3</code> or a fallback audio file.</li>
+      <li>Prints a short success message, or an error if one step fails.</li>
+    </ol>
+
+    <h3>Important functions</h3>
+    <table>
+      <thead>
+        <tr><th>Function</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Resolve-Executable</code></td><td>Looks for an app via <code>Get-Command</code> first, then through known installation paths.</td></tr>
+        <tr><td><code>Start-OrReuseProcess</code></td><td>Reuses an already-running process or launches the application if needed.</td></tr>
+        <tr><td><code>Wait-ForMainWindow</code></td><td>Polls until a process exposes a real top-level window or until the timeout is reached.</td></tr>
+        <tr><td><code>Get-TargetScreen</code></td><td>Finds the requested monitor and falls back safely if that screen index does not exist.</td></tr>
+        <tr><td><code>Tile-Windows-OnScreen</code></td><td>Splits the chosen work area into three columns and positions the windows accordingly.</td></tr>
+        <tr><td><code>Play-StartupAudio</code></td><td>Tries to play <code>welcome.mp3</code> or <code>startup_audio.wav</code> for a limited number of seconds.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What gets tiled</h3>
+    <ul>
+      <li><strong>Column 1:</strong> Thunderbird</li>
+      <li><strong>Column 2:</strong> Spotify</li>
+      <li><strong>Column 3:</strong> Microsoft To Do</li>
+    </ul>
+
+    <h2>2. Setup instructions for another user</h2>
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Windows desktop environment with PowerShell support.</li>
+      <li>Installed applications: Thunderbird, Spotify, and Microsoft To Do.</li>
+      <li>At least one available display.</li>
+      <li>Optional audio file at <code>src/welcome.mp3</code>.</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Important:</strong> The script is Windows-specific because it depends on <code>user32.dll</code>, window handles, and Windows Forms screen detection. It is not meant for macOS or Linux without a rewrite.
+    </div>
+
+    <h3>Recommended first test</h3>
+    <p>Use dry-run mode before actually moving windows. This confirms whether the script can find the installed applications.</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\welcome.ps1 -DryRun</pre>
+
+    <h3>Normal run</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\welcome.ps1</pre>
+
+    <h3>Run on another monitor</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\welcome.ps1 -ScreenIndex 0</pre>
+
+    <h3>Run without music</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\welcome.ps1 -SkipStartupAudio</pre>
+
+    <h3>Settings users typically change</h3>
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Typical use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>-DryRun</code></td><td>Use this first to confirm detection of applications without launching or moving anything.</td></tr>
+        <tr><td><code>-TimeoutSeconds</code></td><td>Increase if one of the apps starts slowly on the user’s machine.</td></tr>
+        <tr><td><code>-PollMilliseconds</code></td><td>Controls how often the script checks for windows during startup.</td></tr>
+        <tr><td><code>-ScreenIndex</code></td><td>Choose the monitor used for tiling. The script falls back to a safe screen if the requested index does not exist.</td></tr>
+        <tr><td><code>-StartupAudioPath</code></td><td>Use a custom audio file instead of the default project audio file.</td></tr>
+        <tr><td><code>-StartupAudioSeconds</code></td><td>Controls how long the startup audio should play.</td></tr>
+        <tr><td><code>-SkipStartupAudio</code></td><td>Disables audio completely.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>How another user should adapt it</h3>
+    <ul>
+      <li>Install the same three applications or edit the script if they prefer different apps.</li>
+      <li>Run <code>-DryRun</code> first and check whether all three executables are detected.</li>
+      <li>Adjust <code>-ScreenIndex</code> for their monitor layout.</li>
+      <li>Set <code>-SkipStartupAudio</code> if they do not want sound on startup.</li>
+      <li>If their app installs live in other locations, update the candidate paths in the script.</li>
+    </ul>
+
+    <h2>3. Current state</h2>
+    <div class="status">
+      <strong>Implemented now:</strong>
+      <ul>
+        <li>Automatic detection and launch/reuse for Thunderbird, Spotify, and Microsoft To Do.</li>
+        <li>Window wait logic with timeout handling.</li>
+        <li>Multi-monitor selection with fallback behavior.</li>
+        <li>Three-column tiling across the selected screen.</li>
+        <li>Optional startup audio with fallback file handling.</li>
+      </ul>
+    </div>
+
+    <h3>TODOs / future plans</h3>
+    <ul>
+      <li>Support a configurable list of applications instead of three fixed apps.</li>
+      <li>Allow custom layout presets such as 2-column, 3-column, or stacked views.</li>
+      <li>Persist preferred monitor and app settings in a config file.</li>
+      <li>Add structured logging for troubleshooting startup issues.</li>
+      <li>Improve detection for Store/UWP applications on different Windows versions.</li>
+      <li>Add a small diagnostic mode that prints detected screens, app paths, and open windows.</li>
+    </ul>
+
+    <h3>Known limitations</h3>
+    <ul>
+      <li>The script is tailored to Windows and desktop GUI sessions.</li>
+      <li>The app set is currently hardcoded.</li>
+      <li>Store-installed apps can behave differently depending on Windows configuration.</li>
+      <li>Audio playback depends on available media support in the current environment.</li>
+    </ul>
+
+    <h2>4. Troubleshooting</h2>
+    <ul>
+      <li><strong>App not found:</strong> run with <code>-DryRun</code> and verify the application is installed in one of the expected locations.</li>
+      <li><strong>Window timeout:</strong> increase <code>-TimeoutSeconds</code> if the app opens slowly.</li>
+      <li><strong>Wrong monitor:</strong> change <code>-ScreenIndex</code>; if the index is invalid, the script falls back automatically.</li>
+      <li><strong>No audio:</strong> ensure <code>welcome.mp3</code> exists or provide <code>-StartupAudioPath</code>.</li>
+      <li><strong>Unexpected layout behavior:</strong> some applications resize themselves after launch, which is why the script applies the tile layout twice.</li>
+    </ul>
+  </main>
+</body>
+</html>
+

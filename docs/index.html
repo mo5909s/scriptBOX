@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptBox Documentation</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 900px; margin: 0 auto; padding: 32px 20px 48px; }
+    h1 { color: #93c5fd; margin-bottom: 8px; }
+    p { line-height: 1.6; color: #cbd5e1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+    .card { background: #111827; border: 1px solid #334155; border-radius: 12px; padding: 18px; }
+    .card h2 { margin-top: 0; color: #f8fafc; }
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ScriptBox Documentation</h1>
+    <p>This folder contains browser-friendly documentation for the PowerShell scripts in <code>src/</code>. Open the pages below in any browser; no LaTeX installation is required.</p>
+    <div class="grid">
+      <section class="card">
+        <h2><a href="newsUpdate_documentation.html">newsUpdate.ps1</a></h2>
+        <p>Explains how the personalized news briefing script works, how another user can configure it, and the current implementation status with next steps.</p>
+      </section>
+      <section class="card">
+        <h2><a href="welcome_documentation.html">welcome.ps1</a></h2>
+        <p>Explains how the startup window-layout script works, how to set it up on a new machine, and what improvements are planned.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
+
