@@ -92,8 +92,8 @@
     <h3>Skip confirmation prompt</h3>
     <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -SkipConfirmation</pre>
 
-    <h3>Enable verbose output</h3>
-    <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -Verbose</pre>
+    <h3>Non-interactive Firefox test input</h3>
+    <pre>cmd /c "(echo 7) | powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -SkipConfirmation"</pre>
 
     <h2>4. Interactive menu</h2>
     <p>When you run the script, you'll see:</p>
@@ -134,24 +134,30 @@ Enter program numbers (comma-separated, e.g. 1,3,5) or 0 for all, Q to quit:</pr
         <tr><td>Node.js</td><td>JavaScript runtime</td><td>OpenJS.NodeJS</td><td>nodejs</td></tr>
         <tr><td>Visual Studio Code</td><td>Code editor</td><td>Microsoft.VisualStudioCode</td><td>vscode</td></tr>
         <tr><td>Python</td><td>Programming language</td><td>Python.Python.3.11</td><td>python</td></tr>
-        <tr><td>FFmpeg</td><td>Multimedia framework</td><td>FFmpeg.FFmpeg</td><td>ffmpeg</td></tr>
-        <tr><td>Notepad++</td><td>Text editor</td><td>Notepad++.Notepad++</td><td>notepadplusplus</td></tr>
-        <tr><td>WinRAR</td><td>Archive utility (trial)</td><td>RARLabs.WinRAR</td><td>winrar</td></tr>
-        <tr><td>Thunderbird</td><td>Email client</td><td>Mozilla.Thunderbird</td><td>thunderbird</td></tr>
         <tr><td>Firefox</td><td>Web browser</td><td>Mozilla.Firefox</td><td>firefox</td></tr>
-        <tr><td>Google Chrome</td><td>Web browser</td><td>Google.Chrome</td><td>googlechrome</td></tr>
-        <tr><td>Spotify</td><td>Music streaming</td><td>Spotify.Spotify</td><td>spotify</td></tr>
         <tr><td>Discord</td><td>Voice and chat</td><td>Discord.Discord</td><td>discord</td></tr>
-        <tr><td>OBS Studio</td><td>Recording and streaming</td><td>OBSProject.OBSStudio</td><td>obs-studio</td></tr>
       </tbody>
     </table>
 
     <h2>6. Adding new programs</h2>
-    <p>To add a new program, edit the <code>$ProgramDatabase</code> array in the script and add an entry like this:</p>
+    <p>To add a new program, edit the <code>$ProgramDatabase</code> array in <code>src/installList.ps1</code> and add an entry like this:</p>
     <pre>@{
     Name = "Program Name"
     Winget = "Vendor.Program"
     Chocolatey = "program"
     Website = "https://official-download-url.com"
     Description = "Brief description"
-}
+}</pre>
+
+    <h2>7. Test run status</h2>
+    <div class="status">
+      <strong>Latest verified run:</strong> Firefox selected with index <code>7</code> and installed successfully using Winget.
+    </div>
+    <pre>cmd /c "(echo 7) | powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -SkipConfirmation"</pre>
+
+    <h2>8. Linux version</h2>
+    <p>A Linux bash variant is available at <code>src/installList.sh</code> with matching interactive flow.</p>
+    <p>Linux docs: <a href="installList_linux_documentation.html">installList.sh documentation</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - installList.sh</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>installList.sh</code></h1>
+    <p>Path: <code>src/installList.sh</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> Linux installer helper that asks which programs to install and chooses the safest available route: distro packages first, then Flatpak/Snap, then official website fallback.
+    </div>
+
+    <h2>1. Safety model</h2>
+    <ol>
+      <li>Use native package manager (<code>apt</code>, <code>dnf</code>, <code>pacman</code>) when available.</li>
+      <li>Fallback to <code>flatpak</code> or <code>snap</code>.</li>
+      <li>If no safe automated route exists, print official download URL instead of running unknown installers.</li>
+    </ol>
+
+    <h2>2. Supported programs</h2>
+    <ul>
+      <li>Firefox</li>
+      <li>VLC</li>
+      <li>Git</li>
+      <li>Node.js</li>
+      <li>Python</li>
+      <li>VS Code</li>
+      <li>Discord</li>
+      <li>7-Zip (or p7zip package equivalent)</li>
+    </ul>
+
+    <h2>3. Setup and usage</h2>
+    <p>Make executable:</p>
+    <pre>chmod +x ./src/installList.sh</pre>
+
+    <p>Run interactive install:</p>
+    <pre>./src/installList.sh</pre>
+
+    <p>Dry run (no changes):</p>
+    <pre>./src/installList.sh --dry-run</pre>
+
+    <p>Skip confirmation prompt:</p>
+    <pre>./src/installList.sh --yes</pre>
+
+    <h2>4. Example: Firefox install</h2>
+    <pre>./src/installList.sh --yes
+# select option: 1</pre>
+
+    <h2>5. Troubleshooting</h2>
+    <ul>
+      <li><strong>Permission denied:</strong> run <code>chmod +x ./src/installList.sh</code>.</li>
+      <li><strong>No supported backend:</strong> install one of <code>apt</code>, <code>dnf</code>, <code>pacman</code>, <code>flatpak</code>, <code>snap</code>.</li>
+      <li><strong>Install fails:</strong> retry manually using the printed package name or official URL.</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Note:</strong> Package names can vary by distro. If a package is unavailable, use the shown official URL fallback.
+    </div>
+  </main>
+</body>
+</html>
+
