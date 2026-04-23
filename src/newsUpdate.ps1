@@ -18,12 +18,13 @@ param(
     [switch]$NoColor,
     [switch]$SaveToFile,
     [string]$OutputPath    = "",
+    [switch]$NoBrowser,
     [switch]$OpenInBrowser,
     [switch]$BrowserOnly
 )
 
 $browserModeExplicitlySet = $PSBoundParameters.ContainsKey("OpenInBrowser") -or $PSBoundParameters.ContainsKey("BrowserOnly")
-if (-not $browserModeExplicitlySet -and [Environment]::UserInteractive) {
+if (-not $browserModeExplicitlySet -and -not $NoBrowser -and [Environment]::UserInteractive) {
     $OpenInBrowser = $true
 }
 
