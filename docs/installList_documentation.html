@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - installList.ps1</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1, h2, h3 { color: #f8fafc; }
+    h1 { margin-bottom: 8px; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    p, li { line-height: 1.65; color: #cbd5e1; }
+    .note, .warning, .status { border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+    .note { background: #13293d; border: 1px solid #275b7a; }
+    .warning { background: #3a1f1f; border: 1px solid #7f1d1d; }
+    .status { background: #15261d; border: 1px solid #166534; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #111827; border: 1px solid #334155; border-radius: 10px; padding: 14px; overflow-x: auto; color: #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #334155; padding: 10px; vertical-align: top; text-align: left; }
+    th { background: #1e293b; color: #f8fafc; }
+    a { color: #60a5fa; }
+    .small { color: #94a3b8; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Documentation: <code>installList.ps1</code></h1>
+    <p class="small">Project path: <code>src/installList.ps1</code></p>
+
+    <div class="note">
+      <strong>Purpose:</strong> This script provides a safe, interactive way to install Windows software by automatically detecting and using the best available package manager (Winget or Chocolatey) with fallback to official downloads. It maintains an expandable database of common programs and validates installations.
+    </div>
+
+    <h2>1. How the script works</h2>
+    <h3>Main execution flow</h3>
+    <ol>
+      <li>Detects available package managers (Winget, Chocolatey).</li>
+      <li>Displays an interactive menu of available programs to install.</li>
+      <li>User selects which programs they want to install.</li>
+      <li>Script determines the best installation method for each selected program.</li>
+      <li>Validates that programs are not already installed.</li>
+      <li>Shows an installation plan for user confirmation.</li>
+      <li>Executes installations using the chosen method.</li>
+      <li>Reports success/failure status for each program.</li>
+    </ol>
+
+    <h3>Installation method hierarchy</h3>
+    <p>For each program, the script tries methods in this order:</p>
+    <ol>
+      <li><strong>Winget</strong> — Built-in on Windows 11 and later; fastest and safest</li>
+      <li><strong>Chocolatey</strong> — Community package manager; requires prior installation</li>
+      <li><strong>Website fallback</strong> — Provides the official download URL for manual installation</li>
+    </ol>
+
+    <h3>Important features</h3>
+    <ul>
+      <li><strong>Pre-installation check:</strong> Verifies program is not already installed before attempting installation.</li>
+      <li><strong>Safe by default:</strong> Shows confirmation prompt before making any changes.</li>
+      <li><strong>Dry-run mode:</strong> Preview what would happen without executing anything.</li>
+      <li><strong>Detailed reporting:</strong> Shows success/skip/failure status for each program.</li>
+      <li><strong>Expandable database:</strong> Easy to add new programs to the list.</li>
+    </ul>
+
+    <h2>2. Setup and prerequisites</h2>
+    <h3>Requirements</h3>
+    <ul>
+      <li>Windows 10 or later</li>
+      <li>PowerShell 5.1 or later (included with Windows)</li>
+      <li>Administrator privileges (required for installation)</li>
+      <li>Internet access</li>
+    </ul>
+
+    <h3>Recommended setup</h3>
+    <p>For best results, install Winget (available natively on Windows 11) or Chocolatey.</p>
+
+    <p><strong>To install Chocolatey:</strong></p>
+    <pre>powershell -ExecutionPolicy Bypass -Command "& {$(irm https://community.chocolatey.org/install.ps1)}"</pre>
+
+    <p><strong>To update Winget on Windows 10:</strong></p>
+    <p>Winget is included on Windows 11+. For Windows 10, download the <a href="https://github.com/microsoft/winget-cli/releases">latest release</a> from GitHub.</p>
+
+    <h2>3. Usage examples</h2>
+    <h3>Basic usage</h3>
+    <p>Run the script and select programs interactively:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1</pre>
+
+    <h3>Dry-run mode (preview without changes)</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -DryRun</pre>
+
+    <h3>Skip confirmation prompt</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -SkipConfirmation</pre>
+
+    <h3>Enable verbose output</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File .\src\installList.ps1 -Verbose</pre>
+
+    <h2>4. Interactive menu</h2>
+    <p>When you run the script, you'll see:</p>
+    <pre>============================================================
+  Smart Program Installer
+============================================================
+
+  [1] VLC Media Player
+      Versatile multimedia player
+  [2] 7-Zip
+      File archive utility
+  [3] Git
+      Version control system
+  ... (more programs)
+
+  [0] Install All
+  [Q] Quit
+
+Enter program numbers (comma-separated, e.g. 1,3,5) or 0 for all, Q to quit:</pre>
+
+    <h3>Selection examples</h3>
+    <ul>
+      <li><code>1,3,5</code> — Install programs 1, 3, and 5</li>
+      <li><code>0</code> — Install all available programs</li>
+      <li><code>Q</code> — Quit without installing anything</li>
+    </ul>
+
+    <h2>5. Available programs</h2>
+    <p>The script includes these programs by default:</p>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Description</th><th>Winget ID</th><th>Choco ID</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>VLC Media Player</td><td>Multimedia player</td><td>VideoLAN.VLC</td><td>vlc</td></tr>
+        <tr><td>7-Zip</td><td>File archive utility</td><td>7zip.7zip</td><td>7zip</td></tr>
+        <tr><td>Git</td><td>Version control</td><td>Git.Git</td><td>git</td></tr>
+        <tr><td>Node.js</td><td>JavaScript runtime</td><td>OpenJS.NodeJS</td><td>nodejs</td></tr>
+        <tr><td>Visual Studio Code</td><td>Code editor</td><td>Microsoft.VisualStudioCode</td><td>vscode</td></tr>
+        <tr><td>Python</td><td>Programming language</td><td>Python.Python.3.11</td><td>python</td></tr>
+        <tr><td>FFmpeg</td><td>Multimedia framework</td><td>FFmpeg.FFmpeg</td><td>ffmpeg</td></tr>
+        <tr><td>Notepad++</td><td>Text editor</td><td>Notepad++.Notepad++</td><td>notepadplusplus</td></tr>
+        <tr><td>WinRAR</td><td>Archive utility (trial)</td><td>RARLabs.WinRAR</td><td>winrar</td></tr>
+        <tr><td>Thunderbird</td><td>Email client</td><td>Mozilla.Thunderbird</td><td>thunderbird</td></tr>
+        <tr><td>Firefox</td><td>Web browser</td><td>Mozilla.Firefox</td><td>firefox</td></tr>
+        <tr><td>Google Chrome</td><td>Web browser</td><td>Google.Chrome</td><td>googlechrome</td></tr>
+        <tr><td>Spotify</td><td>Music streaming</td><td>Spotify.Spotify</td><td>spotify</td></tr>
+        <tr><td>Discord</td><td>Voice and chat</td><td>Discord.Discord</td><td>discord</td></tr>
+        <tr><td>OBS Studio</td><td>Recording and streaming</td><td>OBSProject.OBSStudio</td><td>obs-studio</td></tr>
+      </tbody>
+    </table>
+
+    <h2>6. Adding new programs</h2>
+    <p>To add a new program, edit the <code>$ProgramDatabase</code> array in the script and add an entry like this:</p>
+    <pre>@{
+    Name = "Program Name"
+    Winget = "Vendor.Program"
+    Chocolatey = "program"
+    Website = "https://official-download-url.com"
+    Description = "Brief description"
+}
